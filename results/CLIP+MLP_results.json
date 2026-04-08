@@ -1,0 +1,202 @@
+{
+  "model_name": "CLIP+MLP",
+  "parameters": {
+    "total_params": 152462345,
+    "trainable_params": 1185032,
+    "frozen_params": 151277313,
+    "total_params_M": 152.46,
+    "trainable_params_M": 1.19
+  },
+  "training_time_s": 1411.83,
+  "best_val_accuracy": 1.0,
+  "test_metrics": {
+    "accuracy": 1.0,
+    "f1_macro": 1.0,
+    "f1_weighted": 1.0,
+    "precision_macro": 1.0,
+    "recall_macro": 1.0,
+    "top3_accuracy": 1.0,
+    "classification_report": {
+      "boheme": {
+        "precision": 1.0,
+        "recall": 1.0,
+        "f1-score": 1.0,
+        "support": 14.0
+      },
+      "business": {
+        "precision": 1.0,
+        "recall": 1.0,
+        "f1-score": 1.0,
+        "support": 6.0
+      },
+      "casual": {
+        "precision": 1.0,
+        "recall": 1.0,
+        "f1-score": 1.0,
+        "support": 10.0
+      },
+      "chic": {
+        "precision": 1.0,
+        "recall": 1.0,
+        "f1-score": 1.0,
+        "support": 8.0
+      },
+      "elegant": {
+        "precision": 1.0,
+        "recall": 1.0,
+        "f1-score": 1.0,
+        "support": 9.0
+      },
+      "minimaliste": {
+        "precision": 1.0,
+        "recall": 1.0,
+        "f1-score": 1.0,
+        "support": 10.0
+      },
+      "sportswear": {
+        "precision": 1.0,
+        "recall": 1.0,
+        "f1-score": 1.0,
+        "support": 9.0
+      },
+      "streetwear": {
+        "precision": 1.0,
+        "recall": 1.0,
+        "f1-score": 1.0,
+        "support": 14.0
+      },
+      "accuracy": 1.0,
+      "macro avg": {
+        "precision": 1.0,
+        "recall": 1.0,
+        "f1-score": 1.0,
+        "support": 80.0
+      },
+      "weighted avg": {
+        "precision": 1.0,
+        "recall": 1.0,
+        "f1-score": 1.0,
+        "support": 80.0
+      }
+    },
+    "confusion_matrix": [
+      [
+        14,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0
+      ],
+      [
+        0,
+        6,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0
+      ],
+      [
+        0,
+        0,
+        10,
+        0,
+        0,
+        0,
+        0,
+        0
+      ],
+      [
+        0,
+        0,
+        0,
+        8,
+        0,
+        0,
+        0,
+        0
+      ],
+      [
+        0,
+        0,
+        0,
+        0,
+        9,
+        0,
+        0,
+        0
+      ],
+      [
+        0,
+        0,
+        0,
+        0,
+        0,
+        10,
+        0,
+        0
+      ],
+      [
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        9,
+        0
+      ],
+      [
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        14
+      ]
+    ],
+    "loss": 0.989417576789856
+  },
+  "inference_time": {
+    "mean_ms": 255.72891300078481,
+    "std_ms": 112.56358105960676,
+    "median_ms": 222.06415003165603,
+    "min_ms": 154.23019998706877
+  },
+  "history": {
+    "train_loss": [
+      0.3169248366728425,
+      0.01584825194440782,
+      0.008467451087199152,
+      0.00510991815244779,
+      0.00448726509930566
+    ],
+    "val_loss": [
+      1.837797498703003,
+      1.0786643505096436,
+      0.10251436084508896,
+      0.0045576137490570545,
+      0.0018564024940133095
+    ],
+    "train_acc": [
+      0.934375,
+      1.0,
+      1.0,
+      1.0,
+      1.0
+    ],
+    "val_acc": [
+      0.775,
+      1.0,
+      1.0,
+      1.0,
+      1.0
+    ]
+  }
+}

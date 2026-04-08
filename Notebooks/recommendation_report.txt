@@ -1,0 +1,39 @@
+======================================================================
+RAPPORT DE RECOMMANDATION - MakeAIPrep
+Quel(s) modele(s) garder et pourquoi ?
+======================================================================
+
+#1 CLIP+MLP (Score: 0.5516)
+   Accuracy: 1.0000
+   F1 Score: 1.0000
+   Inference: 222.73ms
+   Params: 152.46M
+
+#2 ResNet50 (Score: 0.5370)
+   Accuracy: 0.6500
+   F1 Score: 0.6193
+   Inference: 169.58ms
+   Params: 24.56M
+
+#3 ViT-B16 (Score: 0.2580)
+   Accuracy: 0.7500
+   F1 Score: 0.6661
+   Inference: 347.37ms
+   Params: 86.59M
+
+#4 CLIP-ZeroShot (Score: 0.0959)
+   Accuracy: 0.1750
+   F1 Score: 0.0372
+   Inference: 155.80ms
+   Params: 151.28M
+
+
+RECOMMANDATION FINALE:
+----------------------------------------
+>> GARDER: CLIP+MLP
+   Raison: Meilleur score global, capacite multimodale
+   (combine image + contexte textuel de l'evenement)
+
+>> GARDER AUSSI: CLIP-ZeroShot (en complement)
+   Raison: Pas besoin d'entrainement, ideal pour le prototypage
+   et comme fallback quand les donnees sont limitees

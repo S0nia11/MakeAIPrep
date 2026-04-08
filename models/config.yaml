@@ -1,0 +1,79 @@
+# MakeAIPrep - Configuration Globale
+# ====================================
+
+# Categories de styles vestimentaires
+style_categories:
+  - casual
+  - business
+  - elegant
+  - streetwear
+  - sportswear
+  - boheme
+  - chic
+  - minimaliste
+
+# Types d'evenements (input texte)
+event_types:
+  - entretien_embauche
+  - entretien_alternance
+  - soiree_networking
+  - presentation_projet
+  - journee_campus
+  - soiree_gala
+  - stage_premier_jour
+  - reunion_professionnelle
+
+# Parametres data
+data:
+  image_size: 224
+  batch_size: 32
+  num_workers: 0  # 0 pour Windows (evite les erreurs multiprocessing)
+  train_split: 0.8
+  val_split: 0.1
+  test_split: 0.1
+  data_dir: "./data"
+
+# Parametres d'entrainement
+training:
+  epochs: 5  # Reduire pour test rapide sur CPU, augmenter a 20+ avec GPU
+  learning_rate: 0.001  # Plus agressif sans pretrained
+  weight_decay: 0.01
+  scheduler: cosine
+  warmup_steps: 100
+  early_stopping_patience: 5
+  seed: 42
+
+# Modeles
+models:
+  resnet50:
+    pretrained: true
+    freeze_backbone_epochs: 5
+    dropout: 0.3
+
+  vit:
+    model_name: "google/vit-base-patch16-224"
+    pretrained: true
+    freeze_backbone_epochs: 3
+    dropout: 0.1
+
+  clip_zeroshot:
+    model_name: "ViT-B-32"
+    pretrained_dataset: "openai"
+
+  clip_mlp:
+    model_name: "ViT-B-32"
+    pretrained_dataset: "openai"
+    mlp_hidden_dims: [512, 256]
+    dropout: 0.2
+    freeze_clip_epochs: 5
+
+# Evaluation
+evaluation:
+  metrics:
+    - accuracy
+    - f1_macro
+    - precision_macro
+    - recall_macro
+    - top3_accuracy
+  confusion_matrix: true
+  per_class_report: true

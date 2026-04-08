@@ -1,0 +1,23 @@
+# Modèles entraînés (trop gros pour git)
+*.pth
+*.pt
+*.ckpt
+*.h5
+*.onnx
+
+# Python
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+.venv/
+venv/
+env/
+
+# OS
+.DS_Store
+Thumbs.db
+
+# IDE
+.vscode/
+.idea/

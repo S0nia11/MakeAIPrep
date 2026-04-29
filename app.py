@@ -30,6 +30,7 @@ from predict import (
     expected_styles, build_recommendation, find_checkpoint,
 )
 from llm_advisor import generate_advice, get_api_key
+from image_search import search_products_batch
 
 # ----- Configuration page -----
 st.set_page_config(
@@ -143,16 +144,12 @@ DISPLAY_STYLES = sorted(
     [c for c in classes if c not in STYLE_BLACKLIST] + EXTRA_STYLES
 )
 
-# ----- Sidebar : juste le modele ML et la liste des styles -----
-with st.sidebar:
-    st.markdown("## Modèle IA")
-    model_choice = st.radio(
-        "Quel modèle utiliser ?",
-        ["CLIP+MLP (recommandé)", "ResNet50", "Les deux"],
-        index=0,
-    )
+# Modele ML toujours utilise (CLIP+MLP donne les meilleurs resultats,
+# on cache le choix a l'utilisateur final).
+model_choice = "CLIP+MLP (recommandé)"
 
-    st.markdown("---")
+# ----- Sidebar : juste la liste des styles disponibles -----
+with st.sidebar:
     st.markdown("### Styles disponibles")
     for c in DISPLAY_STYLES:
         st.markdown(f"- **{c.title()}**")
@@ -375,11 +372,11 @@ else:
     for label, style_used in styles_to_render:
         st.markdown(f"### Conseil relooking — **{style_used.title()}**")
 
-        advice_text = None
+        advice_data = None
         if api_key_present:
             with st.spinner("Génération du conseil personnalisé..."):
                 try:
-                    advice_text = generate_advice(
+                    advice_data = generate_advice(
                         img,
                         style=style_used,
                         event=event,
@@ -391,18 +388,60 @@ else:
                 except Exception as e:
                     st.warning(f"Erreur API Gemini : {e}\n\nConseil générique affiché à la place.")
 
-        if advice_text:
-            # Conseil personnalise du LLM
-            html_text = advice_text.replace("\n", "<br>")
-            st.markdown(
-                f'<div class="reco-box">'
-                f'<span class="style-badge">{style_used.title()}</span>'
-                f'<div style="margin-top:1rem; color:#333; line-height:1.6;">{html_text}</div>'
-                f'</div>',
-                unsafe_allow_html=True,
-            )
+        # Badge du style en haut
+        st.markdown(
+            f'<div style="margin-bottom:1rem;">'
+            f'<span class="style-badge">{style_used.title()}</span>'
+            f'</div>',
+            unsafe_allow_html=True,
+        )
+
+        if advice_data and "sections" in advice_data:
+            # Affichage structure du LLM avec images des produits
+            for section in advice_data["sections"]:
+                section_title = section.get("title") or section.get("type", "Conseil")
+                section_text = section.get("text", "")
+                products = section.get("products", [])
+
+                # Carte conseil
+                st.markdown(f"#### {section_title}")
+                st.markdown(
+                    f'<div style="background:#fff; border-radius:12px; padding:1.2rem; '
+                    f'box-shadow:0 2px 8px rgba(0,0,0,0.05); color:#333; line-height:1.6; '
+                    f'margin-bottom:1rem;">{section_text}</div>',
+                    unsafe_allow_html=True,
+                )
+
+                # Grille des produits avec images
+                if products:
+                    with st.spinner(f"Recherche des produits pour {section_title.lower()}..."):
+                        products_with_images = search_products_batch(products[:6])
+
+                    st.markdown("**Articles / produits suggérés :**")
+                    # Affichage en lignes de 3 colonnes
+                    for row_start in range(0, len(products_with_images), 3):
+                        row = products_with_images[row_start:row_start + 3]
+                        cols = st.columns(3)
+                        for i, prod in enumerate(row):
+                            with cols[i]:
+                                img_url = prod.get("image_url")
+                                name = prod.get("name", "")
+                                brand = prod.get("brand", "")
+                                if img_url:
+                                    try:
+                                        st.image(img_url, use_container_width=True)
+                                    except Exception:
+                                        st.markdown("*(image indisponible)*")
+                                st.markdown(
+                                    f"<div style='text-align:center; font-size:0.85rem; "
+                                    f"line-height:1.3; margin-top:0.3rem;'>"
+                                    f"<strong>{brand}</strong><br>{name}"
+                                    f"</div>",
+                                    unsafe_allow_html=True,
+                                )
+                    st.markdown("---")
         else:
-            # Fallback : dicts statiques
+            # Fallback : dicts statiques (pas d'images)
             fallback_blocks = ""
             if "maquillage" in focus_areas:
                 fallback_blocks += (
@@ -426,10 +465,7 @@ else:
                     f'</p>'
                 )
             st.markdown(
-                f'<div class="reco-box">'
-                f'<span class="style-badge">{style_used.title()}</span>'
-                f'{fallback_blocks}'
-                f'</div>',
+                f'<div class="reco-box">{fallback_blocks}</div>',
                 unsafe_allow_html=True,
             )
 

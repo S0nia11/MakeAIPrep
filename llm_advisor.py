@@ -34,53 +34,95 @@ RETRYABLE_STATUSES = {429, 500, 502, 503, 504}
 SYSTEM_PROMPT = """Tu es un coach relooking expert, specialise dans l'adaptation du look au contexte professionnel et evenementiel.
 
 Regles strictes :
-- Reponds en francais, sans emoji, sans preambule, sans formule de politesse.
+- Reponds en francais, sans emoji.
 - Tiens compte des elements visibles sur la photo : couleur de peau, forme du visage, couleur et coupe des cheveux, morphologie si visible, accessoires deja portes (lunettes, bijoux).
 - Adapte tes conseils au sexe/genre indique :
-  * Femme/autre : maquillage detaille, coiffure feminine, tenue feminine
-  * Homme : pas de maquillage, mais soin de peau / barbe / sourcils, coupe masculine, tenue masculine
+  * Femme/autre : maquillage, coiffure feminine, tenue feminine
+  * Homme : pas de maquillage classique, mais soin de peau / barbe / sourcils, coupe masculine, tenue masculine
 - Sois concret, personnalise et actionnable.
-- Cite TOUJOURS des marques concretes :
-  * Maquillage : 1-2 references abordables (Maybelline, L'Oreal, NYX, Sephora Collection, Bourjois) + 1 reference premium si pertinent (MAC, Charlotte Tilbury, Nars, Dior, Chanel)
-  * Coiffure / produits coiffants : Schwarzkopf, L'Oreal Elnett, GHD, Babyliss, Kerastase, Olaplex
+- Cite des marques concretes :
+  * Maquillage : Maybelline, L'Oreal, NYX, Sephora Collection, Bourjois, MAC, Charlotte Tilbury, Nars, Dior, Chanel
+  * Coiffure : Schwarzkopf, L'Oreal Elnett, GHD, Babyliss, Kerastase, Olaplex
   * Soins homme : Nivea Men, L'Oreal Men Expert, Bulldog, Horace, Le Baigneur
-  * Vetements : 1-2 enseignes accessibles (Zara, Mango, H&M, Uniqlo, Asos, COS) + 1 marque plus haut de gamme si justifie (Sandro, Maje, Sezane, The Kooples, Hugo Boss)
-- Adapte le niveau de gamme au contexte : entretien d'embauche etudiant = accessible, gala = peut monter en gamme.
-- 3 a 4 phrases par section, denses et utiles.
-- Format strict avec sections en majuscules suivies de deux-points et d'un retour a la ligne.
+  * Vetements : Zara, Mango, H&M, Uniqlo, Asos, COS, Sandro, Maje, Sezane, The Kooples, Hugo Boss, Levi's
+- Adapte le niveau de gamme au contexte : etudiant = accessible, gala = peut monter en gamme.
 
-Sections possibles selon ce qui est demande :
+REPONDS UNIQUEMENT EN JSON, suivant ce schema :
+{
+  "sections": [
+    {
+      "type": "MAQUILLAGE" | "SOIN_BARBE" | "COIFFURE" | "TENUE",
+      "title": "Titre lisible affiche a l'utilisateur (ex: Maquillage, Coiffure, Tenue, Soin et Barbe)",
+      "text": "3-4 phrases denses, personnalisees, citant les marques. C'est le conseil principal.",
+      "products": [
+        {
+          "name": "Nom du produit (ex: Rouge a levres Ruby Woo, Jean 501, Blazer cintre noir)",
+          "brand": "Marque (ex: MAC, Levi's, Zara)",
+          "query": "Texte de recherche image optimise (ex: 'MAC Ruby Woo rouge a levres', 'Levi 501 jean homme noir', 'Zara blazer noir cintre femme'). Doit donner un seul produit precis dans une recherche Google Images."
+        }
+      ]
+    }
+  ]
+}
 
-MAQUILLAGE :
-[3-4 phrases : teint, yeux, levres, sourcils + couleurs et marques adaptees au teint/yeux visibles]
+Pour chaque section :
+- 3 a 5 produits max dans products
+- Le champ "query" est crucial : il sert a chercher une image du produit. Utilise marque + nom + type d'objet + couleur + genre si pertinent. Eviter les ambiguites.
+- N'incluez que les sections demandees.
 
-SOIN ET BARBE :
-(uniquement si personne = homme et maquillage demande)
-[3-4 phrases : routine soin peau + barbe/rasage + sourcils + produits cites par marque]
-
-COIFFURE :
-[3-4 phrases : coiffage adapte a la longueur/texture/forme du visage + produits cites par marque]
-
-TENUE :
-[3-4 phrases : pieces precises (chemise, blazer, jean, robe, chaussures) + couleurs + matieres + enseignes citees + accessoires]
-
-Varie tes formulations a chaque appel - n'utilise pas de phrases generiques recyclees."""
+Varie tes formulations a chaque appel."""
 
 
 def build_focus_instruction(focus_areas, gender: str) -> str:
     """Construit l'instruction de focus pour le LLM selon les sections demandees."""
     sections = []
     if "maquillage" in focus_areas:
-        sections.append("SOIN ET BARBE" if gender == "homme" else "MAQUILLAGE")
+        sections.append("SOIN_BARBE" if gender == "homme" else "MAQUILLAGE")
     if "coiffure" in focus_areas:
         sections.append("COIFFURE")
     if "vetements" in focus_areas:
         sections.append("TENUE")
     if not sections:
         sections = ["MAQUILLAGE", "COIFFURE", "TENUE"]
-    if len(sections) == 1:
-        return f"Donne UNIQUEMENT la section {sections[0]}. Pas de section supplementaire."
-    return f"Donne UNIQUEMENT ces sections, dans cet ordre : {', '.join(sections)}. Aucune autre section."
+    return (
+        f"Inclus UNIQUEMENT ces types de sections dans le JSON: {', '.join(sections)}. "
+        f"Aucune autre section."
+    )
+
+
+def _response_schema():
+    """Schema JSON force pour la reponse du LLM."""
+    from google.genai import types
+    return {
+        "type": "OBJECT",
+        "properties": {
+            "sections": {
+                "type": "ARRAY",
+                "items": {
+                    "type": "OBJECT",
+                    "properties": {
+                        "type": {"type": "STRING"},
+                        "title": {"type": "STRING"},
+                        "text": {"type": "STRING"},
+                        "products": {
+                            "type": "ARRAY",
+                            "items": {
+                                "type": "OBJECT",
+                                "properties": {
+                                    "name": {"type": "STRING"},
+                                    "brand": {"type": "STRING"},
+                                    "query": {"type": "STRING"},
+                                },
+                                "required": ["name", "brand", "query"],
+                            },
+                        },
+                    },
+                    "required": ["type", "title", "text", "products"],
+                },
+            }
+        },
+        "required": ["sections"],
+    }
 
 
 def _encode_image(img: Image.Image) -> bytes:
@@ -123,7 +165,7 @@ def generate_advice(
     api_key: Optional[str] = None,
     model: Optional[str] = None,
     max_retries: int = 2,
-) -> str:
+) -> dict:
     """
     Genere un conseil relooking personnalise via Gemini Vision.
 
@@ -180,11 +222,14 @@ def generate_advice(
 
     # Desactiver le mode "thinking" de Gemini 2.5 Flash (consomme des tokens
     # invisibles qui rognent sur la reponse visible) et donner un budget large.
+    # response_mime_type=application/json + response_schema force un output JSON valide.
     config = types.GenerateContentConfig(
         system_instruction=SYSTEM_PROMPT,
-        max_output_tokens=2000,
+        max_output_tokens=4000,
         temperature=0.8,
         thinking_config=types.ThinkingConfig(thinking_budget=0),
+        response_mime_type="application/json",
+        response_schema=_response_schema(),
     )
 
     contents = [
@@ -195,6 +240,7 @@ def generate_advice(
     # Determine la chaine de modeles a essayer
     models_to_try = [model] if model else MODEL_FALLBACK_CHAIN
 
+    import json
     last_exc: Optional[Exception] = None
     for current_model in models_to_try:
         for attempt in range(max_retries + 1):
@@ -206,9 +252,14 @@ def generate_advice(
                 )
                 text = (response.text or "").strip()
                 if text:
-                    return text
-                # Reponse vide -> on traite comme erreur retryable
-                last_exc = RuntimeError(f"Reponse vide de {current_model}")
+                    try:
+                        data = json.loads(text)
+                        if isinstance(data, dict) and "sections" in data:
+                            return data
+                    except json.JSONDecodeError:
+                        pass
+                # Reponse vide ou non-JSON -> on traite comme erreur retryable
+                last_exc = RuntimeError(f"Reponse invalide de {current_model}")
             except Exception as e:
                 last_exc = e
                 if not _is_retryable_error(e):

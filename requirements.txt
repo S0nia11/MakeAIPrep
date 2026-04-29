@@ -38,3 +38,6 @@ streamlit>=1.30.0
 
 # LLM Vision pour conseils relooking personnalises
 google-genai>=1.0.0
+
+# Recherche d'images de produits (gratuit, sans cle API)
+ddgs>=9.0.0

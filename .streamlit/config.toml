@@ -1,0 +1,18 @@
+# MakeAIPrep - Theme Streamlit
+# Charte graphique : vert tendre (CTAs) + cyan/turquoise (accents)
+
+[theme]
+# Couleur primaire = boutons / widgets actifs / sliders
+primaryColor = "#D4F58F"
+# Fond principal de l'app (blanc casse)
+backgroundColor = "#FAFAF7"
+# Fond secondaire (sidebar, cards)
+secondaryBackgroundColor = "#FFFFFF"
+# Couleur du texte
+textColor = "#1F1F1F"
+# Police par defaut
+font = "sans serif"
+
+[client]
+# Cache la sidebar fermable par defaut
+toolbarMode = "minimal"

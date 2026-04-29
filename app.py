@@ -38,46 +38,192 @@ st.set_page_config(
     layout="wide",
 )
 
-# ----- CSS custom -----
+# ----- CSS custom (charte vert/cyan inspiree des maquettes Visily) -----
 st.markdown("""
 <style>
-    .main {
-        background: linear-gradient(135deg, #fdf2f8 0%, #fef3c7 100%);
+    /* Palette couleurs */
+    :root {
+        --primary-cyan: #4FD1B5;
+        --primary-cyan-dark: #3BC4A6;
+        --cta-green: #D4F58F;
+        --cta-green-dark: #C2EB78;
+        --bg-cream: #FAFAF7;
+        --text-dark: #1F1F1F;
+        --text-muted: #666;
+        --card-shadow: 0 2px 12px rgba(0,0,0,0.06);
     }
+
+    /* Fond general */
+    .main, .stApp {
+        background-color: var(--bg-cream);
+    }
+
+    /* Titres */
     h1 {
-        color: #be185d;
+        color: var(--text-dark);
+        font-weight: 700;
         text-align: center;
-        font-family: 'Georgia', serif;
     }
-    .stButton>button {
-        background: linear-gradient(90deg, #ec4899, #f59e0b);
-        color: white;
-        border: none;
-        border-radius: 25px;
-        padding: 0.6rem 2rem;
-        font-weight: bold;
-        transition: transform 0.2s;
+    h2, h3, h4 {
+        color: var(--text-dark);
+        font-weight: 600;
     }
-    .stButton>button:hover {
-        transform: scale(1.05);
+
+    /* Boutons primary (form_submit_button type primary) */
+    .stButton>button[kind="primary"],
+    button[data-testid="stFormSubmitButton"] {
+        background: var(--cta-green) !important;
+        color: var(--text-dark) !important;
+        border: none !important;
+        border-radius: 25px !important;
+        padding: 0.6rem 2rem !important;
+        font-weight: 600 !important;
+        transition: all 0.2s !important;
+        box-shadow: 0 2px 6px rgba(212,245,143,0.5) !important;
     }
+    .stButton>button[kind="primary"]:hover,
+    button[data-testid="stFormSubmitButton"]:hover {
+        background: var(--cta-green-dark) !important;
+        transform: translateY(-1px);
+        box-shadow: 0 4px 10px rgba(212,245,143,0.6) !important;
+    }
+
+    /* Card de conseil / recommandation */
     .reco-box {
         background: white;
-        border-radius: 20px;
+        border-radius: 16px;
         padding: 1.5rem;
-        box-shadow: 0 4px 15px rgba(0,0,0,0.08);
+        box-shadow: var(--card-shadow);
         margin: 1rem 0;
     }
+
+    /* Badge du style recommande */
     .style-badge {
         display: inline-block;
-        background: linear-gradient(90deg, #ec4899, #f59e0b);
+        background: var(--primary-cyan);
         color: white;
-        padding: 0.3rem 1rem;
-        border-radius: 15px;
-        font-weight: bold;
-        font-size: 1.2rem;
+        padding: 0.4rem 1.2rem;
+        border-radius: 20px;
+        font-weight: 700;
+        font-size: 1.1rem;
+        letter-spacing: 0.5px;
+    }
+
+    /* Header MakeAIPrep */
+    .makeaiprep-header {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        padding: 1rem 0;
+        margin-bottom: 1.5rem;
+        border-bottom: 1px solid #eee;
+    }
+    .makeaiprep-logo {
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+        font-weight: 700;
+        font-size: 1.4rem;
+        color: var(--text-dark);
+    }
+    .makeaiprep-logo svg {
+        width: 28px;
+        height: 28px;
+    }
+    .makeaiprep-nav {
+        display: flex;
+        align-items: center;
+        gap: 1.5rem;
+    }
+    .makeaiprep-nav a {
+        color: var(--text-dark);
+        text-decoration: none;
+        font-weight: 500;
+        font-size: 0.95rem;
+    }
+    .makeaiprep-nav a:hover {
+        color: var(--primary-cyan-dark);
+    }
+    .makeaiprep-cta {
+        background: var(--cta-green);
+        color: var(--text-dark);
+        padding: 0.4rem 1.2rem;
+        border-radius: 20px;
+        font-weight: 600;
+        text-decoration: none;
+        border: none;
+    }
+
+    /* Footer */
+    .makeaiprep-footer {
+        text-align: center;
+        padding: 2rem 0 1rem 0;
+        margin-top: 3rem;
+        border-top: 1px solid #eee;
+        color: var(--text-muted);
+        font-size: 0.85rem;
+    }
+    .makeaiprep-footer-icons {
+        display: flex;
+        justify-content: center;
+        gap: 1.5rem;
+        margin-bottom: 1rem;
+    }
+    .makeaiprep-footer-icons a {
+        color: var(--text-muted);
+        text-decoration: none;
+    }
+    .makeaiprep-footer-icons a:hover {
+        color: var(--primary-cyan-dark);
+    }
+    .makeaiprep-footer-icons svg {
+        width: 22px;
+        height: 22px;
+    }
+
+    /* Sidebar plus discrete */
+    [data-testid="stSidebar"] {
+        background-color: white;
+        border-right: 1px solid #eee;
+    }
+
+    /* Inputs / form fields */
+    .stTextInput>div>div>input,
+    .stTextArea>div>div>textarea,
+    .stSelectbox>div>div {
+        border-radius: 10px !important;
+    }
+
+    /* Image hover effect */
+    [data-testid="stImage"] img {
+        border-radius: 10px;
+        transition: transform 0.2s;
+    }
+    [data-testid="stImage"] img:hover {
+        transform: scale(1.02);
     }
 </style>
+""", unsafe_allow_html=True)
+
+
+# ----- Header MakeAIPrep -----
+st.markdown("""
+<div class="makeaiprep-header">
+  <div class="makeaiprep-logo">
+    <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+      <path d="M12 2L13.5 8.5L20 10L13.5 11.5L12 18L10.5 11.5L4 10L10.5 8.5L12 2Z"
+            fill="#4FD1B5" stroke="#4FD1B5" stroke-width="0.5" stroke-linejoin="round"/>
+      <circle cx="19" cy="5" r="1.5" fill="#D4F58F"/>
+      <circle cx="5" cy="18" r="1" fill="#D4F58F"/>
+    </svg>
+    <span>Make<span style="color:#4FD1B5;">AI</span>Prep</span>
+  </div>
+  <div class="makeaiprep-nav">
+    <a href="#">Accueil</a>
+    <a href="#">Analyser mon look</a>
+    <a href="#" class="makeaiprep-cta">Connexion</a>
+  </div>
+</div>
 """, unsafe_allow_html=True)
 
 
@@ -106,15 +252,17 @@ def load_model_clip_mlp(num_classes, _cfg):
     return load_clip_mlp(num_classes, ckpt, _cfg, torch.device("cpu"))
 
 
-# ----- Header -----
-st.markdown("# MakeAIPrep")
+# ----- Sous-titre principal -----
 st.markdown(
-    "<h3 style='text-align:center; font-style:italic; font-weight:normal;'>"
-    "Votre coach relooking IA pour briller à chaque évènement"
-    "</h3>",
+    "<h2 style='text-align:center; font-weight:600; margin-bottom:0.3rem;'>"
+    "Téléchargez votre photo pour une analyse IA"
+    "</h2>"
+    "<p style='text-align:center; color:#666; margin-bottom:2rem;'>"
+    "Uploadez une photo claire de votre visage pour que notre IA puisse "
+    "vous proposer les meilleurs looks."
+    "</p>",
     unsafe_allow_html=True,
 )
-st.markdown("---")
 
 cfg, classes = load_config_and_classes()
 device = torch.device("cpu")
@@ -166,7 +314,7 @@ EVENT_OPTIONS = {
 
 
 # ----- Section 1 : photo + formulaire (pleine largeur) -----
-st.markdown("## 1. Configuration")
+st.markdown("### Votre photo")
 
 tab_upload, tab_camera = st.tabs(["Upload", "Webcam"])
 
@@ -238,7 +386,7 @@ with st.form("relooking_form", clear_on_submit=False):
     )
 
     submitted = st.form_submit_button(
-        "Générer la recommandation",
+        "Lancer l'analyse",
         type="primary",
         use_container_width=True,
     )
@@ -246,14 +394,14 @@ with st.form("relooking_form", clear_on_submit=False):
 st.markdown("---")
 
 # ----- Section 2 : recommandation (pleine largeur, sous la section 1) -----
-st.markdown("## 2. Votre recommandation")
+st.markdown("### Vos Looks Recommandés par l'IA")
 
 if image_file is None:
     st.info("Uploadez une photo ou utilisez la webcam pour commencer.")
 elif not submitted:
     st.info(
         "Configurez vos préférences (genre, type de relooking, précisions) "
-        "puis cliquez sur **Générer la recommandation**."
+        "puis cliquez sur **Lancer l'analyse**."
     )
 else:
     # Mapper UI -> codes API LLM
@@ -469,10 +617,20 @@ else:
                 unsafe_allow_html=True,
             )
 
-st.markdown("---")
-st.markdown(
-    "<div style='text-align:center; color:#999; font-size:0.85rem;'>"
-    "MakeAIPrep · Projet Ydays · Powered by ResNet50 + CLIP"
-    "</div>",
-    unsafe_allow_html=True,
-)
+# ----- Footer MakeAIPrep -----
+st.markdown("""
+<div class="makeaiprep-footer">
+  <div class="makeaiprep-footer-icons">
+    <a href="#" aria-label="Facebook">
+      <svg viewBox="0 0 24 24" fill="currentColor"><path d="M22 12c0-5.52-4.48-10-10-10S2 6.48 2 12c0 4.84 3.44 8.87 8 9.8V15H8v-3h2V9.5C10 7.57 11.57 6 13.5 6H16v3h-2c-.55 0-1 .45-1 1v2h3v3h-3v6.95c5.05-.5 9-4.76 9-9.95z"/></svg>
+    </a>
+    <a href="#" aria-label="Instagram">
+      <svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 2.16c3.2 0 3.58.01 4.85.07 1.17.05 1.8.25 2.23.41.56.22.96.48 1.38.9.42.42.68.82.9 1.38.16.42.36 1.06.41 2.23.06 1.27.07 1.65.07 4.85s-.01 3.58-.07 4.85c-.05 1.17-.25 1.8-.41 2.23-.22.56-.48.96-.9 1.38-.42.42-.82.68-1.38.9-.42.16-1.06.36-2.23.41-1.27.06-1.65.07-4.85.07s-3.58-.01-4.85-.07c-1.17-.05-1.8-.25-2.23-.41-.56-.22-.96-.48-1.38-.9-.42-.42-.68-.82-.9-1.38-.16-.42-.36-1.06-.41-2.23-.06-1.27-.07-1.65-.07-4.85s.01-3.58.07-4.85c.05-1.17.25-1.8.41-2.23.22-.56.48-.96.9-1.38.42-.42.82-.68 1.38-.9.42-.16 1.06-.36 2.23-.41 1.27-.06 1.65-.07 4.85-.07M12 0C8.74 0 8.33.01 7.05.07 5.78.13 4.9.33 4.14.63c-.79.3-1.46.72-2.13 1.39C1.34 2.7.92 3.36.62 4.16.32 4.92.13 5.79.07 7.06.01 8.33 0 8.74 0 12s.01 3.67.07 4.95c.06 1.27.26 2.14.56 2.91.3.8.72 1.46 1.39 2.13.67.67 1.34 1.09 2.13 1.39.77.3 1.65.5 2.92.56C8.33 23.99 8.74 24 12 24s3.67-.01 4.95-.07c1.27-.06 2.14-.26 2.91-.56.8-.3 1.46-.72 2.13-1.39.67-.67 1.09-1.34 1.39-2.13.3-.77.5-1.65.56-2.92.06-1.27.07-1.68.07-4.94s-.01-3.67-.07-4.95c-.06-1.27-.26-2.14-.56-2.91-.3-.8-.72-1.46-1.39-2.13C21.31 1.34 20.65.92 19.85.62c-.77-.3-1.65-.5-2.92-.56C15.67.01 15.26 0 12 0zm0 5.84c-3.4 0-6.16 2.76-6.16 6.16s2.76 6.16 6.16 6.16 6.16-2.76 6.16-6.16S15.4 5.84 12 5.84zM12 16c-2.21 0-4-1.79-4-4s1.79-4 4-4 4 1.79 4 4-1.79 4-4 4zm6.41-11.85c-.8 0-1.44.65-1.44 1.44s.65 1.44 1.44 1.44 1.44-.65 1.44-1.44-.65-1.44-1.44-1.44z"/></svg>
+    </a>
+    <a href="#" aria-label="Twitter">
+      <svg viewBox="0 0 24 24" fill="currentColor"><path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117L17.083 19.77z"/></svg>
+    </a>
+  </div>
+  <div>MakeAIPrep · Projet Ydays · CLIP+MLP & Gemini Vision</div>
+</div>
+""", unsafe_allow_html=True)

@@ -14,25 +14,21 @@ style_categories:
 
 # Mapping evenement -> styles attendus (pour la recommandation)
 event_to_style:
-  entretien_embauche:    [professionnel, minimaliste, naturel]
-  entretien_alternance:  [professionnel, minimaliste, naturel]
+  entretien_embauche:      [professionnel, minimaliste, naturel]
+  premier_jour_travail:    [professionnel, naturel, minimaliste]
+  presentation_projet:     [professionnel, elegant, naturel]
   reunion_professionnelle: [professionnel, elegant, minimaliste]
-  presentation_projet:   [professionnel, elegant, naturel]
-  stage_premier_jour:    [professionnel, naturel, minimaliste]
-  soiree_networking:     [elegant, professionnel, glamour]
-  soiree_gala:           [glamour, elegant, doux]
-  journee_campus:        [naturel, minimaliste, doux]
+  after_work:              [elegant, chic, professionnel]
+  soiree_gala:             [glamour, elegant, festif]
 
 # Types d'evenements (input texte)
 event_types:
   - entretien_embauche
-  - entretien_alternance
-  - soiree_networking
+  - premier_jour_travail
   - presentation_projet
-  - journee_campus
-  - soiree_gala
-  - stage_premier_jour
   - reunion_professionnelle
+  - after_work
+  - soiree_gala
 
 # Parametres data
 data:

@@ -38,7 +38,7 @@ data:
   train_split: 0.8
   val_split: 0.1
   test_split: 0.1
-  data_dir: "./datasets_faces"
+  data_dir: "./datasets/final"
 
 # Parametres d'entrainement (defaults; chaque modele peut surcharger learning_rate)
 training:

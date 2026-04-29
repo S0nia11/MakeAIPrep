@@ -8,7 +8,7 @@ Pipeline ameliore:
 2. Normalisation L2 (distance cosinus implicite avec KMeans euclidien).
 3. Reduction PCA (debruite + accelere).
 4. KMeans avec selection du meilleur K via score silhouette (si --auto-k).
-5. Copie des images dans datasets_faces/images/cluster_X/ + metadata.csv.
+5. Copie des images dans datasets/final/images/cluster_X/ + metadata.csv.
 
 Usage:
     python preprocessing/cluster_faces.py                  # K=8 fixe
@@ -111,7 +111,7 @@ def select_best_k(feats, k_range=(5, 11), seed=42):
 def main():
     parser = argparse.ArgumentParser()
     parser.add_argument("--src", default="datasets/images_nettoyées_manuellement")
-    parser.add_argument("--dst", default="datasets_faces")
+    parser.add_argument("--dst", default="datasets/final")
     parser.add_argument("--k", type=int, default=8)
     parser.add_argument("--auto-k", action="store_true",
                         help="Cherche K optimal entre 5 et 10 via silhouette")
@@ -190,7 +190,7 @@ def main():
     print(f"\nDataset pret dans: {dst.resolve()}")
     print(f"Total: {len(rows)} images / {k} classes")
     print("\nProchaine etape:")
-    print("  python train.py --all --data-dir ./datasets_faces")
+    print("  python train.py --all --data-dir ./datasets/final")
 
 
 if __name__ == "__main__":

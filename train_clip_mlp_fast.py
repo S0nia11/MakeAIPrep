@@ -10,8 +10,8 @@ uniquement le MLP par-dessus.
 Gain typique: ~50-100x plus rapide pour le meme resultat.
 
 Usage:
-    python train_clip_mlp_fast.py --data-dir ./datasets_faces
-    python train_clip_mlp_fast.py --data-dir ./datasets_faces --epochs 30 --no-cache
+    python train_clip_mlp_fast.py --data-dir ./datasets/final
+    python train_clip_mlp_fast.py --data-dir ./datasets/final --epochs 30 --no-cache
 """
 
 import argparse
@@ -131,7 +131,7 @@ def evaluate(mlp, loader, device, criterion):
 
 def main():
     ap = argparse.ArgumentParser()
-    ap.add_argument("--data-dir", default="./datasets_faces")
+    ap.add_argument("--data-dir", default="./datasets/final")
     ap.add_argument("--save-dir", default="./results")
     ap.add_argument("--config", default="./models/config.yaml")
     ap.add_argument("--epochs", type=int, default=30)

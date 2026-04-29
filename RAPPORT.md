@@ -153,7 +153,7 @@ Softmax → probabilités
 
 ### 4.2 Procédure d'entraînement (`train_clip_mlp_fast.py`)
 
-1. **Pré-calcul des embeddings CLIP** (image + texte) une seule fois et mise en cache disque (`datasets_faces/_clip_cache.pt`)
+1. **Pré-calcul des embeddings CLIP** (image + texte) une seule fois et mise en cache disque (`datasets/final/_clip_cache.pt`)
 2. **Entraînement du MLP uniquement** sur ces embeddings figés
 3. **Optimiseur :** AdamW, lr=1e-3, weight_decay=0.01
 4. **Scheduler :** CosineAnnealingLR sur 30 epochs max

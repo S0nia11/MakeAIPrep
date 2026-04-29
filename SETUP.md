@@ -88,13 +88,13 @@ Le checkpoint `.pth` du modèle CLIP+MLP est **exclu du Git** (trop gros, ignor�
 ### Option A — Ré-entraîner localement (~5-10 min sur CPU)
 
 ```powershell
-python train_clip_mlp_fast.py --data-dir ./datasets_faces
+python train_clip_mlp_fast.py --data-dir ./datasets/final
 ```
 
 Ce script :
 1. Télécharge CLIP ViT-B-32 depuis HuggingFace (~600 MB, fait UNE seule fois)
 2. Calcule les embeddings CLIP de toutes les photos (~2 min)
-3. Cache ces embeddings dans `datasets_faces/_clip_cache.pt`
+3. Cache ces embeddings dans `datasets/final/_clip_cache.pt`
 4. Entraîne le MLP par-dessus (~10 sec)
 5. Sauvegarde le checkpoint final dans `results/CLIP+MLP_fast.pth`
 
@@ -160,7 +160,7 @@ python -m streamlit run app.py
 
 ### `clip_mlp : pas de checkpoint trouvé`
 
-→ Étape 4 manquée. Lance `python train_clip_mlp_fast.py --data-dir ./datasets_faces`.
+→ Étape 4 manquée. Lance `python train_clip_mlp_fast.py --data-dir ./datasets/final`.
 
 ### `Pas de clé API Gemini configurée`
 
@@ -206,7 +206,8 @@ pip install -r requirements.txt
 ```
 MakeAIPrep/
 ├── app.py                     # UI Streamlit (point d'entrée)
-├── predict.py                 # Inférence ML (CLIP+MLP) + dicts de conseils statiques
+├── predict.py                 # Inférence ML (CLIP+MLP)
+├── static_tips.py             # Dictionnaires de conseils statiques (fallback)
 ├── llm_advisor.py             # Appel Gemini API + structured JSON output
 ├── image_search.py            # Recherche d'images via DuckDuckGo
 ├── train_clip_mlp_fast.py     # Script d'entraînement rapide du MLP
@@ -234,10 +235,15 @@ MakeAIPrep/
 │   ├── metrics.py             # Métriques d'éval
 │   └── visualization.py       # Plots
 │
-├── datasets_faces/
-│   ├── images/                # Photos par classe (boheme, doux, elegant...)
-│   ├── metadata.csv           # Labels
-│   └── _clip_cache.pt         # Cache embeddings CLIP (généré, NON versionné)
+├── datasets/                  # Pipeline data complet
+│   ├── README.md              # Explique raw -> cleaned -> final
+│   ├── download_images.py     # Script de téléchargement
+│   ├── raw/                   # 1. Images brutes (par prompt)
+│   ├── cleaned/               # 2. Images nettoyées manuellement
+│   └── final/                 # 3. Dataset final pour le ML
+│       ├── images/            # Photos par classe (boheme, doux, elegant...)
+│       ├── metadata.csv       # Labels
+│       └── _clip_cache.pt     # Cache embeddings CLIP (généré, NON versionné)
 │
 ├── results/
 │   ├── CLIP+MLP_fast.pth      # Modèle entraîné (NON versionné)
@@ -250,8 +256,8 @@ MakeAIPrep/
 │   ├── prepare_data.py        # Split train/val/test
 │   └── cluster_faces.py       # Clustering des visages
 │
-├── Notebooks/                 # Notebooks d'analyse exploratoire
-└── Datasets/                  # Datasets bruts (avant nettoyage)
+├── notebooks/                 # Notebooks d'analyse exploratoire
+└── docs/                      # Slides présentation (PDF, PPTX)
 ```
 
 ---
@@ -270,7 +276,7 @@ MakeAIPrep/
 python -m streamlit run app.py
 
 # Ré-entraîner le modèle
-python train_clip_mlp_fast.py --data-dir ./datasets_faces
+python train_clip_mlp_fast.py --data-dir ./datasets/final
 
 # Test ML uniquement (sans UI)
 python predict.py --image chemin/vers/photo.jpg --event "entretien d'embauche"

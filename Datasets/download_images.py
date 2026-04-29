@@ -41,7 +41,7 @@ queries = [
 # =========================
 # 2. DOSSIER DE SORTIE
 # =========================
-BASE_DIR = "Datasets/images_downold"
+BASE_DIR = "datasets/raw"
 os.makedirs(BASE_DIR, exist_ok=True)
 
 # =========================

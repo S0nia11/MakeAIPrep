@@ -231,7 +231,7 @@ st.markdown("""
 @st.cache_resource
 def load_config_and_classes():
     cfg = yaml.safe_load(open("./models/config.yaml"))
-    data_dir = Path("./datasets_faces")
+    data_dir = Path("./datasets/final")
     classes = sorted([d.name for d in (data_dir / "images").iterdir() if d.is_dir()])
     return cfg, classes
 
@@ -464,7 +464,7 @@ else:
                         loaded = load_model_clip_mlp(len(classes), cfg)
                         if loaded is None:
                             st.warning(f"{mn} : pas de checkpoint trouvé. "
-                                       "Lance `python train_clip_mlp_fast.py --data-dir ./datasets_faces`")
+                                       "Lance `python train_clip_mlp_fast.py --data-dir ./datasets/final`")
                             continue
                         mlp, clip_m, prep, tok = loaded
                         probs = predict_clip_mlp(mlp, clip_m, prep, tok,

@@ -96,7 +96,7 @@ def label_images(image_paths, device):
 def main():
     ap = argparse.ArgumentParser()
     ap.add_argument("--src", default="datasets/images_nettoyées_manuellement")
-    ap.add_argument("--dst", default="datasets_faces")
+    ap.add_argument("--dst", default="datasets/final")
     ap.add_argument("--limit", type=int, default=0,
                     help="Limiter a N images (test rapide). 0 = tout traiter.")
     ap.add_argument("--dry-run", action="store_true",
@@ -167,8 +167,8 @@ def main():
     print(f"\nDataset pret dans: {dst.resolve()}")
     print(f"Total: {len(rows)} images / {len(STYLE_NAMES)} classes semantiques")
     print("\nProchaine etape:")
-    print("  python train.py --all --data-dir ./datasets_faces")
-    print("  python train_clip_mlp_fast.py --data-dir ./datasets_faces")
+    print("  python train.py --all --data-dir ./datasets/final")
+    print("  python train_clip_mlp_fast.py --data-dir ./datasets/final")
 
 
 if __name__ == "__main__":

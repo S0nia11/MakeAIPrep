@@ -27,7 +27,7 @@ Thumbs.db
 .env
 
 # Cache embeddings CLIP
-datasets_faces/_clip_cache.pt
+datasets/final/_clip_cache.pt
 
 # Fichier temporaire upload Streamlit
 _tmp_input.jpg

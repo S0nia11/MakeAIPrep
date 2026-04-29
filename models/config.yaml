@@ -1,16 +1,27 @@
 # MakeAIPrep - Configuration Globale
 # ====================================
 
-# Categories de styles vestimentaires
+# Categories de styles relooking/maquillage - labels SEMANTIQUES reels
+# Generes par preprocessing/label_with_clip.py (CLIP zero-shot)
 style_categories:
-  - casual
-  - business
+  - naturel
+  - professionnel
   - elegant
-  - streetwear
-  - sportswear
-  - boheme
-  - chic
+  - glamour
   - minimaliste
+  - boheme
+  - doux
+
+# Mapping evenement -> styles attendus (pour la recommandation)
+event_to_style:
+  entretien_embauche:    [professionnel, minimaliste, naturel]
+  entretien_alternance:  [professionnel, minimaliste, naturel]
+  reunion_professionnelle: [professionnel, elegant, minimaliste]
+  presentation_projet:   [professionnel, elegant, naturel]
+  stage_premier_jour:    [professionnel, naturel, minimaliste]
+  soiree_networking:     [elegant, professionnel, glamour]
+  soiree_gala:           [glamour, elegant, doux]
+  journee_campus:        [naturel, minimaliste, doux]
 
 # Types d'evenements (input texte)
 event_types:
@@ -31,30 +42,32 @@ data:
   train_split: 0.8
   val_split: 0.1
   test_split: 0.1
-  data_dir: "./data"
+  data_dir: "./datasets_faces"
 
-# Parametres d'entrainement
+# Parametres d'entrainement (defaults; chaque modele peut surcharger learning_rate)
 training:
-  epochs: 5  # Reduire pour test rapide sur CPU, augmenter a 20+ avec GPU
-  learning_rate: 0.001  # Plus agressif sans pretrained
+  epochs: 20
+  learning_rate: 0.001
   weight_decay: 0.01
   scheduler: cosine
   warmup_steps: 100
   early_stopping_patience: 5
   seed: 42
 
-# Modeles
+# Modeles - LR differencies: ResNet (CNN) supporte 1e-3, transformers (ViT/CLIP) preferent 1e-4
 models:
   resnet50:
     pretrained: true
-    freeze_backbone_epochs: 5
+    freeze_backbone_epochs: 3
     dropout: 0.3
+    learning_rate: 0.001
 
   vit:
     model_name: "google/vit-base-patch16-224"
     pretrained: true
     freeze_backbone_epochs: 3
     dropout: 0.1
+    learning_rate: 0.0001
 
   clip_zeroshot:
     model_name: "ViT-B-32"
@@ -65,7 +78,8 @@ models:
     pretrained_dataset: "openai"
     mlp_hidden_dims: [512, 256]
     dropout: 0.2
-    freeze_clip_epochs: 5
+    freeze_clip_epochs: 20  # garder CLIP gele -> compatible avec train_clip_mlp_fast.py
+    learning_rate: 0.001
 
 # Evaluation
 evaluation:

@@ -51,7 +51,8 @@ class Trainer:
         self.save_dir.mkdir(parents=True, exist_ok=True)
 
         # Optimiseur et scheduler
-        self.criterion = nn.CrossEntropyLoss()
+        # Label smoothing aide quand les labels sont bruites (pseudo-labels KMeans).
+        self.criterion = nn.CrossEntropyLoss(label_smoothing=0.1)
         self.optimizer = AdamW(
             filter(lambda p: p.requires_grad, model.parameters()),
             lr=lr,

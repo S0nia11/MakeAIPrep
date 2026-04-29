@@ -39,16 +39,21 @@ def compute_metrics(
         top3_correct = sum(1 for i, t in enumerate(y_true) if t in top3_preds[i])
         metrics["top3_accuracy"] = top3_correct / len(y_true)
 
-    # Rapport par classe
+    # Rapport par classe (robuste: fixe le set d'index attendus)
+    n_classes = len(class_names)
+    all_labels = list(range(n_classes))
     metrics["classification_report"] = classification_report(
         y_true, y_pred,
+        labels=all_labels,
         target_names=class_names,
         zero_division=0,
         output_dict=True,
     )
 
-    # Matrice de confusion
-    metrics["confusion_matrix"] = confusion_matrix(y_true, y_pred).tolist()
+    # Matrice de confusion (taille fixe n_classes x n_classes)
+    metrics["confusion_matrix"] = confusion_matrix(
+        y_true, y_pred, labels=all_labels
+    ).tolist()
 
     return metrics
 

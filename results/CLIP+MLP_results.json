@@ -1,13 +1,13 @@
 {
   "model_name": "CLIP+MLP",
   "parameters": {
-    "total_params": 152462345,
-    "trainable_params": 1185032,
-    "frozen_params": 151277313,
-    "total_params_M": 152.46,
-    "trainable_params_M": 1.19
+    "total_params": 659463,
+    "trainable_params": 659463,
+    "frozen_params": 0,
+    "total_params_M": 0.66,
+    "trainable_params_M": 0.66
   },
-  "training_time_s": 1411.83,
+  "training_time_s": 2.69,
   "best_val_accuracy": 1.0,
   "test_metrics": {
     "accuracy": 1.0,
@@ -21,78 +21,61 @@
         "precision": 1.0,
         "recall": 1.0,
         "f1-score": 1.0,
-        "support": 14.0
+        "support": 16.0
       },
-      "business": {
+      "doux": {
         "precision": 1.0,
         "recall": 1.0,
         "f1-score": 1.0,
-        "support": 6.0
-      },
-      "casual": {
-        "precision": 1.0,
-        "recall": 1.0,
-        "f1-score": 1.0,
-        "support": 10.0
-      },
-      "chic": {
-        "precision": 1.0,
-        "recall": 1.0,
-        "f1-score": 1.0,
-        "support": 8.0
+        "support": 5.0
       },
       "elegant": {
         "precision": 1.0,
         "recall": 1.0,
         "f1-score": 1.0,
-        "support": 9.0
+        "support": 12.0
+      },
+      "glamour": {
+        "precision": 1.0,
+        "recall": 1.0,
+        "f1-score": 1.0,
+        "support": 13.0
       },
       "minimaliste": {
         "precision": 1.0,
         "recall": 1.0,
         "f1-score": 1.0,
-        "support": 10.0
+        "support": 21.0
       },
-      "sportswear": {
+      "naturel": {
         "precision": 1.0,
         "recall": 1.0,
         "f1-score": 1.0,
-        "support": 9.0
+        "support": 42.0
       },
-      "streetwear": {
+      "professionnel": {
         "precision": 1.0,
         "recall": 1.0,
         "f1-score": 1.0,
-        "support": 14.0
+        "support": 43.0
       },
       "accuracy": 1.0,
       "macro avg": {
         "precision": 1.0,
         "recall": 1.0,
         "f1-score": 1.0,
-        "support": 80.0
+        "support": 152.0
       },
       "weighted avg": {
         "precision": 1.0,
         "recall": 1.0,
         "f1-score": 1.0,
-        "support": 80.0
+        "support": 152.0
       }
     },
     "confusion_matrix": [
       [
-        14,
-        0,
-        0,
-        0,
-        0,
-        0,
-        0,
-        0
-      ],
-      [
-        0,
-        6,
+        16,
         0,
         0,
         0,
@@ -102,8 +85,7 @@
       ],
       [
         0,
-        0,
-        10,
+        5,
         0,
         0,
         0,
@@ -113,8 +95,7 @@
       [
         0,
         0,
-        0,
-        8,
+        12,
         0,
         0,
         0,
@@ -124,8 +105,7 @@
         0,
         0,
         0,
-        0,
-        9,
+        13,
         0,
         0,
         0
@@ -135,8 +115,7 @@
         0,
         0,
         0,
-        0,
-        10,
+        21,
         0,
         0
       ],
@@ -146,8 +125,7 @@
         0,
         0,
         0,
-        0,
-        9,
+        42,
         0
       ],
       [
@@ -157,42 +135,52 @@
         0,
         0,
         0,
-        0,
-        14
+        43
       ]
-    ],
-    "loss": 0.989417576789856
+    ]
   },
   "inference_time": {
-    "mean_ms": 255.72891300078481,
-    "std_ms": 112.56358105960676,
-    "median_ms": 222.06415003165603,
-    "min_ms": 154.23019998706877
+    "mean_ms": 0.6250160000490723,
+    "std_ms": 0.17524229404181144,
+    "median_ms": 0.6000000012136297,
+    "min_ms": 0.24109999867505394
   },
   "history": {
     "train_loss": [
-      0.3169248366728425,
-      0.01584825194440782,
-      0.008467451087199152,
-      0.00510991815244779,
-      0.00448726509930566
+      0.7188532116996796,
+      0.4791017414128632,
+      0.46655951068114443,
+      0.4641099016943413,
+      0.4603550223146731,
+      0.46286507424477225,
+      0.4600565841089146,
+      0.45991150996497066
     ],
     "val_loss": [
-      1.837797498703003,
-      1.0786643505096436,
-      0.10251436084508896,
-      0.0045576137490570545,
-      0.0018564024940133095
+      1.7277778816223144,
+      1.3334496116638184,
+      0.7286933358510336,
+      0.46733055512110394,
+      0.44922643661499023,
+      0.4490150260925293,
+      0.448780669371287,
+      0.45017088850339254
     ],
     "train_acc": [
-      0.934375,
+      0.9136929460580913,
+      1.0,
+      1.0,
+      1.0,
       1.0,
       1.0,
       1.0,
       1.0
     ],
     "val_acc": [
-      0.775,
+      0.7,
+      0.8666666666666667,
+      1.0,
+      1.0,
       1.0,
       1.0,
       1.0,

@@ -144,10 +144,11 @@ def get_transforms(image_size: int = 224, augment: bool = True) -> Dict[str, tra
             transforms.Resize((image_size + 32, image_size + 32)),
             transforms.RandomCrop(image_size),
             transforms.RandomHorizontalFlip(p=0.5),
+            transforms.RandAugment(num_ops=2, magnitude=9),
             transforms.ColorJitter(brightness=0.2, contrast=0.2, saturation=0.2, hue=0.1),
-            transforms.RandomRotation(10),
             transforms.ToTensor(),
             normalize,
+            transforms.RandomErasing(p=0.25, scale=(0.02, 0.2)),
         ])
     else:
         train_transform = transforms.Compose([

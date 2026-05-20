@@ -498,43 +498,60 @@ else:
                     if blacklisted in classes:
                         probs[classes.index(blacklisted)] = 0.0
                 top, reco, verdict = build_recommendation(probs, classes, expected, top_k=3)
-
-                with st.container():
-                    st.markdown(f"### {mn.upper().replace('_', '+')}")
-                    for rank, (cls, p) in enumerate(top, 1):
-                        col_a, col_b = st.columns([1, 4])
-                        with col_a:
-                            st.markdown(f"**#{rank} {cls.title()}**")
-                        with col_b:
-                            st.progress(float(p), text=f"{p*100:.1f}%")
-                    if "OK" in verdict:
-                        st.success(verdict)
-                    elif "ATTENTION" in verdict:
-                        st.warning(verdict)
-                    else:
-                        st.info(verdict)
-
                 styles_to_render.append((mn, reco))
 
     # Generation des conseils pour chaque style retenu
+    import hashlib
+    def _params_signature(img_file, style, event, gender, focus_areas, event_name, user_desc):
+        """Cle de cache : si tous les inputs sont identiques, on reutilise le resultat."""
+        h = hashlib.md5()
+        img_file.seek(0)
+        h.update(img_file.read())
+        img_file.seek(0)
+        h.update(f"{style}|{event}|{gender}|{','.join(focus_areas)}|{event_name or ''}|{user_desc or ''}".encode())
+        return h.hexdigest()
+
+    if "advice_cache" not in st.session_state:
+        st.session_state.advice_cache = {}
+
     for label, style_used in styles_to_render:
         st.markdown(f"### Conseil relooking — **{style_used.title()}**")
 
         advice_data = None
         if api_key_present:
-            with st.spinner("Génération du conseil personnalisé..."):
-                try:
-                    advice_data = generate_advice(
-                        img,
-                        style=style_used,
-                        event=event,
-                        gender=gender_code,
-                        focus_areas=focus_areas,
-                        event_name=event_name,
-                        user_description=user_description,
-                    )
-                except Exception as e:
-                    st.warning(f"Erreur API Gemini : {e}\n\nConseil générique affiché à la place.")
+            # Cache local : reutilise si meme parametres
+            sig = _params_signature(image_file, style_used, event, gender_code,
+                                     focus_areas, event_name, user_description)
+            if sig in st.session_state.advice_cache:
+                advice_data = st.session_state.advice_cache[sig]
+            else:
+                with st.spinner("Génération du conseil personnalisé..."):
+                    try:
+                        advice_data = generate_advice(
+                            img,
+                            style=style_used,
+                            event=event,
+                            gender=gender_code,
+                            focus_areas=focus_areas,
+                            event_name=event_name,
+                            user_description=user_description,
+                        )
+                        st.session_state.advice_cache[sig] = advice_data
+                    except Exception as e:
+                        err_msg = str(e)
+                        if "RESOURCE_EXHAUSTED" in err_msg or "429" in err_msg:
+                            st.error(
+                                "**Quota Gemini épuisé pour aujourd'hui** (20 req/jour gratuit par modèle).\n\n"
+                                "**Solutions :**\n"
+                                "1. **Attendre** : reset à 9h du matin (heure de Paris)\n"
+                                "2. **Créer une 2ᵉ clé API** sur un autre compte Google (perso) "
+                                "→ https://aistudio.google.com/app/apikey → "
+                                "remplace dans `.streamlit/secrets.toml` puis restart\n"
+                                "3. **Activer le billing** sur le projet (gratuit jusqu'à plusieurs milliers de req/jour)\n\n"
+                                "En attendant, conseil générique affiché ci-dessous."
+                            )
+                        else:
+                            st.warning(f"Erreur API Gemini : {e}\n\nConseil générique affiché à la place.")
 
         # Badge du style en haut
         st.markdown(
@@ -545,6 +562,35 @@ else:
         )
 
         if advice_data and "sections" in advice_data:
+            # Bloc analyse visage (si fourni par Gemini)
+            fa = advice_data.get("face_analysis")
+            if fa:
+                fa_html = (
+                    f'<div style="background:#FFF; border-radius:12px; padding:1rem 1.2rem; '
+                    f'box-shadow:0 2px 8px rgba(0,0,0,0.05); margin-bottom:1.2rem; '
+                    f'border-left:3px solid #4FD1B5;">'
+                    f'<div style="font-weight:600; margin-bottom:0.5rem; color:#1F1F1F;">Analyse de votre visage</div>'
+                    f'<div style="font-size:0.9rem; color:#444; line-height:1.6;">'
+                )
+                if fa.get("skin_tone"):
+                    fa_html += f"<b>Carnation</b> : {fa['skin_tone']} &nbsp;·&nbsp; "
+                if fa.get("undertone"):
+                    fa_html += f"<b>Sous-ton</b> : {fa['undertone']} &nbsp;·&nbsp; "
+                if fa.get("skin_type"):
+                    fa_html += f"<b>Type de peau</b> : {fa['skin_type']} &nbsp;·&nbsp; "
+                if fa.get("eye_color"):
+                    fa_html += f"<b>Yeux</b> : {fa['eye_color']} &nbsp;·&nbsp; "
+                if fa.get("hair_color"):
+                    fa_html += f"<b>Cheveux</b> : {fa['hair_color']}"
+                if fa.get("face_shape"):
+                    fa_html += f" &nbsp;·&nbsp; <b>Visage</b> : {fa['face_shape']}"
+                if fa.get("skin_particularities"):
+                    fa_html += f"<br><b>Particularités</b> : {fa['skin_particularities']}"
+                if fa.get("notes"):
+                    fa_html += f"<br><span style='color:#666; font-style:italic;'>{fa['notes']}</span>"
+                fa_html += "</div></div>"
+                st.markdown(fa_html, unsafe_allow_html=True)
+
             # Affichage structure du LLM avec images des produits
             for section in advice_data["sections"]:
                 section_title = section.get("title") or section.get("type", "Conseil")
@@ -579,7 +625,19 @@ else:
                                     try:
                                         st.image(img_url, use_container_width=True)
                                     except Exception:
-                                        st.markdown("*(image indisponible)*")
+                                        st.markdown(
+                                            "<div style='background:#F5F5F5; border-radius:10px; "
+                                            "padding:2rem 1rem; text-align:center; color:#999; "
+                                            "font-size:0.85rem;'>Image indisponible</div>",
+                                            unsafe_allow_html=True,
+                                        )
+                                else:
+                                    st.markdown(
+                                        "<div style='background:#F5F5F5; border-radius:10px; "
+                                        "padding:2rem 1rem; text-align:center; color:#999; "
+                                        "font-size:0.85rem;'>Image non trouvée</div>",
+                                        unsafe_allow_html=True,
+                                    )
                                 st.markdown(
                                     f"<div style='text-align:center; font-size:0.85rem; "
                                     f"line-height:1.3; margin-top:0.3rem;'>"

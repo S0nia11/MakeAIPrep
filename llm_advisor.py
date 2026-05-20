@@ -20,11 +20,13 @@ from typing import Optional
 from PIL import Image
 
 
-# Modeles Gemini par ordre de preference (premier = meilleur, dernier = fallback)
+# Modeles Gemini par ordre de preference (premier = essaye d'abord).
+# IMPORTANT : 2.0-flash en 1er car free tier = 200 req/jour (vs 20 pour 2.5-flash).
+# Qualite quasi-equivalente pour notre cas d'usage (vision + texte).
 MODEL_FALLBACK_CHAIN = [
-    "gemini-2.5-flash",  # Plus recent, meilleure qualite
-    "gemini-2.0-flash",  # Fallback robuste, large dispo
-    "gemini-flash-latest",  # Alias toujours pointant sur le dernier flash dispo
+    "gemini-2.0-flash",       # Free tier genereux (200/jour), qualite tres bonne
+    "gemini-2.5-flash",       # Meilleure qualite mais quota daily restreint
+    "gemini-flash-latest",    # Alias dynamique en derniere chance
 ]
 
 # Codes HTTP a retry (transitoires)
@@ -35,11 +37,42 @@ SYSTEM_PROMPT = """Tu es un coach relooking expert, specialise dans l'adaptation
 
 Regles strictes :
 - Reponds en francais, sans emoji.
-- Tiens compte des elements visibles sur la photo : couleur de peau, forme du visage, couleur et coupe des cheveux, morphologie si visible, accessoires deja portes (lunettes, bijoux).
-- Adapte tes conseils au sexe/genre indique :
-  * Femme/autre : maquillage, coiffure feminine, tenue feminine
+- ANALYSE D'ABORD la photo et remplit imperativement le champ "face_analysis" avec ce que tu vois :
+  * skin_tone : describe la carnation precise (pas seulement claire/medium/mate, sois descriptif)
+  * undertone : "froid" / "neutre" / "chaud" en justifiant si possible
+  * skin_type : "grasse" / "seche" / "normale" / "mixte" si discernable (brillances, pores visibles, peau matte naturellement, etc.)
+  * skin_particularities : taches de rousseur, rougeurs, hyperpigmentation, cernes, imperfections visibles - liste ce qui influencera tes recos (chaine vide si rien de particulier)
+  * eye_color : couleur exacte des yeux (bleu, vert, noisette, marron clair, marron fonce, noir...)
+  * hair_color : couleur exacte des cheveux (blond clair, blond fonce, chatain clair, chatain fonce, brun, noir, roux, gris...)
+  * face_shape : "ovale" / "rond" / "carre" / "rectangle" / "coeur" / "diamant" (si discernable)
+- Tes conseils DOIVENT decouler de cette analyse. Par exemple :
+  * Peau claire + sous-ton froid -> rose poudre, prune, bordeaux, rouge framboise, argent, marine
+  * Peau claire + sous-ton chaud -> peche, corail, terracotta, dore, kaki, camel
+  * Peau medium + sous-ton chaud -> bronze, terracotta, rouge brique, ocre, kaki
+  * Peau mate / foncee + sous-ton chaud -> jewel tones (emeraude, saphir, rubis), or, cuivre, prune profond
+  * Peau noire -> couleurs vives (fuchsia, orange, jaune moutarde), nude profond, gold, prune
+  * Yeux bleus -> bronze, cuivre, peche pour faire ressortir
+  * Yeux verts -> prune, bordeaux, dore pour intensifier
+  * Yeux marrons -> bleu nuit, vert emeraude, violet pour contraster
+  * Cheveux blonds -> couleurs douces, eviter le tres fonce
+  * Cheveux bruns -> tout est possible, oser les couleurs profondes
+- Adapte aussi au sexe/genre indique :
+  * Femme/autre : maquillage detaille, coiffure feminine, tenue feminine
   * Homme : pas de maquillage classique, mais soin de peau / barbe / sourcils, coupe masculine, tenue masculine
 - Sois concret, personnalise et actionnable.
+- POUR LES PRODUITS TEINTES (fond de teint, BB cream, correcteur, poudre, blush) :
+  Analyse TOI-MEME la peau de la personne sur la photo (pas juste un mapping generique).
+  Tiens compte de TOUS les elements visibles : carnation exacte, sous-ton, eventuelles rougeurs,
+  taches de rousseur, hyperpigmentation, type de peau apparent (grasse/sechee/normale/mixte).
+  Puis CHOISIS LIBREMENT le produit et la teinte qui colle au mieux a CETTE personne specifique,
+  en citant le nom exact de la teinte/nuance (numero, nom de code, ou les deux).
+  Justifie brievement ton choix dans le champ "text" (ex: "Pour votre teint medium avec un sous-ton
+  legerement chaud et quelques taches de rousseur, optez pour la teinte 220 Camel de chez X qui
+  unifiera sans masquer vos taches.")
+  IMPORTANT : pas de mapping fige - chaque peau est unique. Adapte vraiment.
+- Pour les rouges a levres et fards a paupieres : cite le nom EXACT de la teinte (ex: "MAC Ruby Woo"
+  pas juste "rouge MAC", "Naked3 Urban Decay" pas juste "palette Urban Decay").
+- Pour le blush : choisis la teinte selon la carnation (rose poudre, peche, terracotta, prune...).
 - Cite des marques concretes :
   * Maquillage : Maybelline, L'Oreal, NYX, Sephora Collection, Bourjois, MAC, Charlotte Tilbury, Nars, Dior, Chanel
   * Coiffure : Schwarzkopf, L'Oreal Elnett, GHD, Babyliss, Kerastase, Olaplex
@@ -49,6 +82,14 @@ Regles strictes :
 
 REPONDS UNIQUEMENT EN JSON, suivant ce schema :
 {
+  "face_analysis": {
+    "skin_tone": "claire / medium / mate / etc.",
+    "undertone": "froid / neutre / chaud",
+    "eye_color": "bleu / vert / marron / etc.",
+    "hair_color": "blond / brun / etc.",
+    "face_shape": "ovale / rond / etc.",
+    "notes": "Eventuelles remarques additionnelles sur le visage qui influencent la reco (ex: 'taches de rousseur', 'sourcils tres fins')"
+  },
   "sections": [
     {
       "type": "MAQUILLAGE" | "SOIN_BARBE" | "COIFFURE" | "TENUE",
@@ -58,7 +99,24 @@ REPONDS UNIQUEMENT EN JSON, suivant ce schema :
         {
           "name": "Nom du produit (ex: Rouge a levres Ruby Woo, Jean 501, Blazer cintre noir)",
           "brand": "Marque (ex: MAC, Levi's, Zara)",
-          "query": "Texte de recherche image optimise (ex: 'MAC Ruby Woo rouge a levres', 'Levi 501 jean homme noir', 'Zara blazer noir cintre femme'). Doit donner un seul produit precis dans une recherche Google Images."
+          "queries": "Tableau de 3 textes de recherche differents, du plus precis au plus generique. On va tester les 3 jusqu'a trouver une vraie photo produit. FORMAT pour CHAQUE query :
+<type produit> + <marque> + <nom/teinte> + <site>
+
+REGLES :
+1. TOUJOURS commencer par le type de produit en francais generique (rouge a levres, brosse cheveux, blazer femme, jean homme, mascara, fond de teint, robe, eyeliner, fer a boucler, etc.). Les marques courtes sont dangereuses (COS=cosinus, MAC=Apple, NYX=mots croises, Mason Pearson=prenoms).
+2. Toujours ajouter un site e-commerce a la fin.
+
+Strategie pour les 3 queries :
+- Query 1 : la plus precise avec teinte + marque + site (ex: 'rouge a levres mat MAC Ruby Woo sephora')
+- Query 2 : variante avec un autre site/contexte (ex: 'rouge a levres MAC Ruby Woo amazon')
+- Query 3 : plus generique (ex: 'rouge a levres rouge mat sephora')
+
+Sites a utiliser dans les queries : sephora, marionnaud, nocibe, amazon, zalando, fnac, douglas, asos, lookfantastic, hm.com.
+
+Exemples corrects :
+['rouge a levres mat MAC Ruby Woo sephora', 'rouge a levres rouge MAC Ruby Woo amazon', 'rouge a levres rouge mat sephora']
+['brosse cheveux poils sanglier Mason Pearson amazon', 'brosse cheveux sanglier amazon', 'brosse cheveux professionnelle amazon']
+['blazer noir cintre femme COS zalando', 'blazer noir femme COS', 'blazer cintre noir femme zalando']"
         }
       ]
     }
@@ -67,7 +125,7 @@ REPONDS UNIQUEMENT EN JSON, suivant ce schema :
 
 Pour chaque section :
 - 3 a 5 produits max dans products
-- Le champ "query" est crucial : il sert a chercher une image du produit. Utilise marque + nom + type d'objet + couleur + genre si pertinent. Eviter les ambiguites.
+- Le champ "query" est crucial : il sert a chercher une image du produit. Suis les regles ci-dessus pour eviter les ambiguites.
 - N'incluez que les sections demandees.
 
 Varie tes formulations a chaque appel."""
@@ -96,6 +154,20 @@ def _response_schema():
     return {
         "type": "OBJECT",
         "properties": {
+            "face_analysis": {
+                "type": "OBJECT",
+                "properties": {
+                    "skin_tone": {"type": "STRING"},
+                    "undertone": {"type": "STRING"},
+                    "skin_type": {"type": "STRING"},
+                    "skin_particularities": {"type": "STRING"},
+                    "eye_color": {"type": "STRING"},
+                    "hair_color": {"type": "STRING"},
+                    "face_shape": {"type": "STRING"},
+                    "notes": {"type": "STRING"},
+                },
+                "required": ["skin_tone", "undertone", "eye_color", "hair_color"],
+            },
             "sections": {
                 "type": "ARRAY",
                 "items": {
@@ -111,9 +183,12 @@ def _response_schema():
                                 "properties": {
                                     "name": {"type": "STRING"},
                                     "brand": {"type": "STRING"},
-                                    "query": {"type": "STRING"},
+                                    "queries": {
+                                        "type": "ARRAY",
+                                        "items": {"type": "STRING"},
+                                    },
                                 },
-                                "required": ["name", "brand", "query"],
+                                "required": ["name", "brand", "queries"],
                             },
                         },
                     },
@@ -121,7 +196,7 @@ def _response_schema():
                 },
             }
         },
-        "required": ["sections"],
+        "required": ["face_analysis", "sections"],
     }
 
 
